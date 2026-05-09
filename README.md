@@ -6,9 +6,16 @@ The Open Pixmap File Format (OPFF) is a deterministic, hardware-first file forma
 
 It is designed strictly for **memory-mapped, zero-copy parsing**. It physically prohibits data compression, variable-length metadata trees, and implicit scanline padding. The parser simply reads a fixed 64-byte header, calculates the mathematical memory bounds in $O(1)$ time, and hands a cache-aligned raw pointer directly to the application. 
 
-### Motivation: Reducing Cognitive Load 
+### Motivation: Radical Accessibility & Debugging
+OPFF was not engineered to compete with enterprise serialization frameworks, nor is it designed to perfectly align with every proprietary hardware accelerator on the market. It was built for **hackers, researchers, and engine developers**. 
 
-OPFF was engineered specifically to reduce cognitive load during systems-level debugging and algorithmic experimentation. When building custom rendering pipelines or testing new AI architectures, developers waste hours fighting opaque serialization frameworks. OPFF eliminates this friction. It provides a format so mechanically transparent that you can open it in a hex editor and instantly verify its exact geometry. No black boxes, no hidden abstraction layers—just pure, predictable memory.
+The primary goal of OPFF is to drop cognitive load to zero during algorithmic experimentation and debugging. By stripping out variable-length metadata, compression, and nested schemas, OPFF provides a format so mechanically transparent that a developer can open it in a hex editor and instantly verify its spatial bounds. High-performance traits—like zero-copy memory mapping and native CPU cache alignment—are not the goal; they are simply the natural byproducts of keeping the data structure aggressively simple.
+
+...
+
+### Architectural Boundaries (Limitations)
+* **Hardware Agnosticism over Hyper-Optimization:** While the 64-byte header provides a clean baseline for most modern processors, OPFF does not attempt to chase proprietary alignments (e.g., 128-byte Tensor Core boundaries). Simplicity and structural predictability will always take precedence over hardware-specific micro-optimizations.
+
 
 ---
 ## 1. The Header & Cache Alignment
