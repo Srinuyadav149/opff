@@ -4,7 +4,7 @@
 
 The Open Pixmap File Format (OPFF) is a deterministic, hardware-first file format for multidimensional arrays (images, video frames, AI tensors, and point clouds). 
 
-It is designed strictly for **memory-mapped, zero-copy parsing**. It physically prohibits data compression, variable-length metadata trees, and implicit scanline padding. The parser simply reads a fixed 64-byte header, calculates the mathematical memory bounds in $O(1)$ time, and hands a cache-aligned raw pointer directly to the application. 
+It is designed strictly for **memory-mapped, zero-copy parsing**. It physically prohibits data compression, variable-length metadata trees, and implicit scanline padding. The parser simply reads a fixed 64-byte header, calculates the mathematical memory bounds in `O(1)` time, and hands a cache-aligned raw pointer directly to the application. 
 
 ### Motivation: Radical Accessibility & Debugging
 OPFF was not engineered to compete with enterprise serialization frameworks, nor is it designed to perfectly align with every proprietary hardware accelerator on the market. It was built for **hackers, researchers, and engine developers**. 
