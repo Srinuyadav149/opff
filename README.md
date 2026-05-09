@@ -11,7 +11,6 @@ OPFF was not engineered to compete with enterprise serialization frameworks, nor
 
 The primary goal of OPFF is to drop cognitive load to zero during algorithmic experimentation and debugging. By stripping out variable-length metadata, compression, and nested schemas, OPFF provides a format so mechanically transparent that a developer can open it in a hex editor and instantly verify its spatial bounds. High-performance traits—like zero-copy memory mapping and native CPU cache alignment—are not the goal; they are simply the natural byproducts of keeping the data structure aggressively simple.
 
-...
 
 ### Architectural Boundaries (Limitations)
 * **Hardware Agnosticism over Hyper-Optimization:** While the 64-byte header provides a clean baseline for most modern processors, OPFF does not attempt to chase proprietary alignments (e.g., 128-byte Tensor Core boundaries). Simplicity and structural predictability will always take precedence over hardware-specific micro-optimizations.
