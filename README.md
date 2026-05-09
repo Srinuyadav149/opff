@@ -1,5 +1,6 @@
 # Open Pixmap File Format (OPFF)
 **Revision 1.0**
+
 OPFF is a fast, dead-simple file format for multidimensional arrays (like images, video frames, AI tensors, or point clouds). 
 It is designed strictly for **memory-mapped, zero-copy parsing**. It has no compression, no variable-length metadata, and no implicit padding. The parser simply reads the fixed 64-byte header, calculates the memory bounds, and hands a raw pointer directly to the application. 
 The format guarantees the structural size of the memory block. It does *not* care what the data means (e.g., color spaces, coordinate systems). That is up to your application.
