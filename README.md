@@ -22,6 +22,7 @@ For the historical context, design rules, and strict boundaries regarding this f
 
 * [Origin Story: The Netpbm & PNG Dilemma](ORIGIN.md)
 * [Architectural Philosophy & Extension Rules](PHILOSOPHY.md)
+* [Techniques: Workarounds & Application-Specific Extensions](TECHNIQUES.md)
 * [AI Usage Statement](AI_USAGE.md)
 
 
