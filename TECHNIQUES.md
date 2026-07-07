@@ -2,13 +2,13 @@
 
 OPFF’s core is frozen and devoid of implicit logic. If your hardware architecture—such as FPGA alignment constraints or SIMD vectorization targets—demands specific memory layouts, you must enforce them at the application layer.
 
-## Accountability: The "Clean Room" Guarantee
+## Accountability & The Explicitness Mandate
 
-When you debug a memory dump, you have absolute certainty that any logic modifying the raw data was explicitly defined in your own code. The format does not perform padding, alignment, or metadata injection behind your back. 
+OPFF physically prohibits implicit scanline padding and format-level byte swapping. When a format tries to be "helpful" by auto-padding or auto-swapping, it introduces hidden $O(N)$ processing penalties and creates a false reality for the developer. By forcing you to explicitly manage memory boundaries, OPFF provides a **"Clean Room" Guarantee**:
 
-* **Zero Hidden Variables:** If a buffer is misaligned, you know exactly which line of your application code added the padding.
+* **Zero Hidden Variables:** The format never executes branching bit-shifts or hidden masks behind your back. If a buffer is misaligned, you know exactly which line of your application code added the padding.
 
-* **Deterministic Verification:** Because the core parser is restricted to raw, unpadded memory blocks, you can verify your application's output against the disk state without the noise of format-specific transformations.
+* **Deterministic Verification:** Because the parser only maps what is physically there, you can verify your application's output against the raw disk state without the noise of format-specific transformations.
 
 * **Format Neutrality:** The format acts as a passive observer. It does not "know" if it contains a bitmap, a tensor, or a LiDAR point cloud; it only maps the physical geometry.
 
@@ -20,20 +20,22 @@ When you debug a memory dump, you have absolute certainty that any logic modifyi
 
 * **The Application Logic:** Manually insert dummy bytes or pad your width dimensions in your application code *before* writing the buffer. You effectively bake the alignment requirement directly into the file geometry, ensuring the OPFF file remains a faithful 1:1 mirror of your memory.
 
-## 2. Bitmaps & Modulo-8 Stride
+## 2. Bitmaps & Semantic Geometry Loss
 
-* **The Constraint:** Your data is sub-byte (e.g., 1-bit or 4-bit) and the scanline width does not map cleanly to a byte boundary.
+* **The Constraint:** Your 1-bit spatial data (e.g., a width of 13 pixels) does not map to a clean multiple of 8, triggering the Bitmap Modulo Contradiction in the core parser.
 
-* **The Application Logic:** Define the scanline as an array of the smallest possible byte-aligned unit. For example, if a 1-bit image width is 13 pixels, define the width as a 2-byte (16-bit) array in the header. Your parser logic remains O(1) by consistently reading a byte-aligned stride.
+* **The Application Logic:** You must pad the physical geometry to the nearest byte boundary (e.g., pad to 16 bits) to satisfy the hardware layout. Because the core header now maps the *padded* physical boundary (16), the *logical* semantic boundary (13) is lost to the core format. To recover this, append a custom footer storing the exact count of valid bits. The application reads the 16-bit physical geometry from the core, then reads the logical `13` from the footer to mask out the dummy bits during rendering.
 
-## 3. Endianness & Byte Order (The Rare Exception)
+## 3. Endianness, `mmap`, and Hardware Reality (The Rare Exception)
 
-* **The Constraint:** OPFF captures a direct mirror of RAM, meaning it captures the host architecture's native endianness. Because modern hardware (x86, ARM) is overwhelmingly Little-Endian, endian mismatch is a rare exception.
+* **The Constraint:** OPFF mathematically mandates strict Little-Endian (LE) byte ordering in both the header and the payload. You are executing on a Big-Endian (BE) machine, and calling `mmap` maps the raw LE bytes directly into your BE memory space.
 
-* **The Application Logic:** If you are operating in a cross-architecture environment (e.g., sharing data with legacy Big-Endian mainframes or specific network hardware), you must handle the byte order manually. Either pre-swap your multi-byte data (`u16`, `f32`) to a standardized Little-Endian format before triggering the memory dump, or use a custom footer to embed an endianness flag for the receiving parser.
+* **The Reality Check:** Because modern hardware (x86, ARM, RISC-V) is overwhelmingly Little-Endian, endian mismatch is a rare exception in modern computing. 
+
+* **Why This is Not a Contradiction:** When `mmap` occurs, the OS maps the physical bytes exactly as they exist on disk. Endianness dictates how bytes are *interpreted*, but it does not change the physical *size* of the data. The core parser's geometric bounds calculation (`Expected_Size`) remains mathematically bulletproof. The parser calculates the payload size, maps it, and halts. The format has successfully acted as a pure physical mirror.
+
+* **The Application Logic:** The data layer is static; the clash is purely in the execution architecture. To resolve this, the application layer (not the core parser) must execute $O(N)$ `bswap` instructions immediately after mapping the memory for reads, or immediately before writing the memory to disk.
 
 ## 4. Custom Footers (`OPFX` & `OPF*`)
-
-* **The Constraint:** You need to attach metadata (calibration matrices, timestamps, color spaces) or define experimental, application-specific data types (e.g., swapping a standard 8-bit float for Bfloat8) without breaking the zero-copy core parser.
-
-* **The Application Logic:** Append arbitrary bytes immediately after the contiguous data block. The core parser stops at the defined dimensions. You can use the namespace byte in the magic number (`OPFX` for personal hacks, `OPF*` for domain standards) to signal to your application layer how to parse this trailing metadata. This enables seamless type-swaps: the core header maps the physical byte footprint, while the footer instructs your application logic to cast that exact footprint into a custom or experimental data type.
+* **The Constraint:** You need to attach metadata (calibration matrices, timestamps, color spaces, semantic geometry bounds) or define experimental, application-specific data types (e.g., swapping a standard 8-bit float for Bfloat8) without breaking the zero-copy core parser.
+* **The Application Logic:** Append arbitrary bytes immediately after the contiguous data block. Use the namespace byte (`OPFX` or `OPF*`) to signal the presence of metadata. Because the core parser does not validate trailing bytes, your custom footer must utilize fixed-size structs or length-prefixed architectures with isolated magic bytes. This explicitly protects your application from blindly executing uninitialized disk sectors as metadata schemas, while enabling seamless type-swaps and metadata injection.
