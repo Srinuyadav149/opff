@@ -113,16 +113,33 @@ Because OPFF physically isolates structural bounds from semantic interpretation,
 * `b'OPF[A-E, G-W, Y-Z]'`: The Decentralized Ecosystem. Open namespace characters for communities to claim and define their own standardized semantic footers.
 
 ---
-## 8. Applications & Limitations
+### 8. Applications & Limitations
 
-**Optimal Domains:**
-* **Local AI/ML Inference:** Routing heavily quantized tensors directly to hardware FPU registers with zero deserialization lag.
-* **3D Geospatial & LiDAR:** Memory-mapping massive planar point clouds instantly without the sequential chunking algorithms of LAS/LAZ.
-* **Systems Engines:** Loading raw temporal buffers or deterministic physics grids directly into casted C/Rust structs safely.
+**Core Application: Debugging & Experimental Verification**
+
+OPFF is fundamentally a diagnostic tool. Its primary purpose is to rapidly dump, map, and verify multidimensional memory states without the interference of implicit padding, text-parsing overhead, compression, or variable-length header bloat.
+
+* **Graphics & Rendering:** Dumping raw framebuffers, raytracer outputs, or intermediate pipeline states to verify mathematical logic.
+
+* **AI/ML Development:** Inspecting intermediate neural network states or isolating tensor mathematics during model training.
+
+* **Physics & Spatial Systems:** Verifying the exact state of deterministic physics grids or 3D LiDAR point clouds without the friction of sequential chunking.
+
+**Secondary Applications: Zero-Overhead Pipelines**
+Because OPFF is mathematically rigid and completely devoid of bloat, its raw throughput makes it highly effective for specialized local pipelines, even outside of debugging contexts:
+
+* **Hardware Sensor Dumps:** Capturing high-frequency, raw physical sensor arrays (e.g., FPGA to NVMe) straight to disk with zero CPU processing overhead.
+
+* **Local Engine Assets:** Loading uncompressed textures or spatial arrays into custom systems engines via instant zero-copy memory mapping.
+
+* **Embedded Inference:** Routing quantized ML weights directly to hardware FPU registers on local edge devices where deserialization lag is unacceptable.
 
 **Architectural Boundaries (Limitations):**
+
 * **Heterogeneous Data:** OPFF enforces strict multidimensional arrays of a single data type. It cannot mix floats and variable strings in the contiguous payload.
-* **General-Purpose Storage:** It is inherently hostile to web APIs, text documents, or sparse data graphs. Use Protobuf, FlatBuffers, or JSON for dynamic schema evolution.
+
+* **General-Purpose Storage:** It is inherently hostile to web APIs, network distribution, text documents, or sparse data graphs. Use Protobuf, FlatBuffers, or JSON for dynamic schema evolution.
+
 
 ---
 ## License
