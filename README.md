@@ -13,7 +13,16 @@ The primary goal of OPFF is to drop cognitive load to zero during algorithmic ex
 
 
 ### Architectural Boundaries (Limitations)
+
 * **Hardware Agnosticism over Hyper-Optimization:** While the 64-byte header provides a clean baseline for most modern processors, OPFF does not attempt to chase proprietary alignments (e.g., 128-byte Tensor Core boundaries). Simplicity and structural predictability will always take precedence over hardware-specific micro-optimizations.
+
+## Documentation & Architecture
+
+For the historical context, design rules, and strict boundaries regarding this format, refer to the supplementary documentation:
+
+* [Origin Story: The Netpbm & PNG Dilemma](ORIGIN.md)
+* [Architectural Philosophy & Extension Rules](PHILOSOPHY.md)
+* [AI Usage Statement](AI_USAGE.md)
 
 
 ---
