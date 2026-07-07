@@ -2,17 +2,22 @@
 
 OPFF’s core is frozen and devoid of implicit logic. If your hardware architecture—such as FPGA alignment constraints or SIMD vectorization targets—demands specific memory layouts, you must enforce them at the application layer.
 
+> ### ⚠️ STRICT ARCHITECTURAL DISCLAIMER
+> The techniques outlined in this document are **non-standard workarounds**. They are neither advisable for general-purpose use nor are they verified, policed, or guaranteed by the OPFF core specification. The core parser blindly maps physical memory boundaries according to the header; it does not validate custom metadata, semantic bounds, or byte alignment logic. Absolute structural and logical integrity remains the exclusive responsibility of the application layer.
+
 ## Accountability & Explicitness as a Feature
 
-OPFF physically prohibits implicit scanline padding and format-level byte swapping. When a format tries to be "helpful" by auto-padding or auto-swapping, it introduces hidden $O(N)$ processing penalties and creates a false reality for the developer. 
+OPFF physically prohibits implicit scanline padding and format-level byte swapping. While processing overhead and computational penalties are secondary concerns, the true threat in an environment built strictly for experimentation and debugging is that implicit behaviors introduce **cognitive load and structural uncertainty**. 
 
-The format does not dictate your memory boundaries. Instead, it forces you to explicitly define your own padding, bitmap alignments, and application-specific choices. By treating **explicitness as a feature**, OPFF provides a strict **"Clean Room" Guarantee**:
+If a file format attempts to be "helpful" by silently padding or swapping bytes behind your back, it destroys your mental model of the bare-metal environment. You are left guessing whether a visual artifact or data desync is caused by your core algorithm or the format's hidden handling layers. 
 
-* **Zero Hidden Variables:** The format never executes branching bit-shifts or hidden masks behind your back. If a buffer is misaligned, you know exactly which line of your application code added the padding.
+The format refuses to dictate your memory boundaries or guess your intent. Instead, it forces you to explicitly define your own padding, bitmap alignments, and application-specific choices. By treating **explicitness as a feature**, OPFF guarantees:
 
-* **Deterministic Verification:** Because the parser only maps what is physically there, you can verify your application's output against the raw disk state without the noise of format-specific transformations.
+* **Zero Cognitive Uncertainty:** The format never executes branching bit-shifts, hidden masks, or transformations behind your back. What you write is exactly what sits on the disk.
 
-* **Format Neutrality:** The format acts as a passive observer. It does not "know" if it contains a bitmap, a tensor, or a LiDAR point cloud; it only maps the physical geometry.
+* **Deterministic Verification:** Because the parser only maps what is physically there, you can verify your application's output against the raw disk state via a hex editor without the noise of format-specific layer conversions.
+
+* **Format Neutrality:** The format acts as a completely passive observer. It does not "know" if it contains a bitmap, a tensor, or a LiDAR point cloud; it only maps the physical geometry.
 
 * **Enforced Competence:** The format acts as a strict compiler for memory dumping. It prevents lazy engineering by forcing the developer to understand and declare the exact physical footprint of their data before they write it to disk.
 
@@ -34,7 +39,7 @@ The format does not dictate your memory boundaries. Instead, it forces you to ex
 
 * **The Constraint:** OPFF mathematically mandates strict Little-Endian (LE) byte ordering in both the header and the payload. You are executing on a Big-Endian (BE) machine, and calling `mmap` maps the raw LE bytes directly into your BE memory space.
 
-* **The Reality Check:** Because modern hardware (x86, ARM, RISC-V) is overwhelmingly Little-Endian, endian mismatch is a rare exception in modern computing.
+* **The Reality Check:** Because modern hardware (x86, ARM, RISC-V) is overwhelmingly Little-Endian, endian mismatch is a rare exception in modern computing. 
 
 * **Why This is Not a Contradiction:** When `mmap` occurs, the OS maps the physical bytes exactly as they exist on disk. Endianness dictates how bytes are *interpreted*, but it does not change the physical *size* of the data. The core parser's geometric bounds calculation (`Expected_Size`) remains mathematically bulletproof. The parser calculates the payload size, maps it, and halts. The format has successfully acted as a pure physical mirror.
 
