@@ -2,7 +2,11 @@
 
 OPFF is governed by strict architectural rules designed to protect the integrity of the data layer, prevent feature creep, and allow infinite extensibility without breaking the core parser.
 
-## 1. The "Implementation Friction" Heuristic
+## 1. Direct Mapping to Hardware Constraints
+Hardware does not understand abstract concepts like "schema evolution," "semantic padding," or "custom tensor types." Hardware only understands contiguous blocks of bytes and physical boundaries. OPFF refuses to act as a software abstraction; it **maps directly to hardware constraints**. When a format automatically handles cache alignment or implicitly manages stride, it lies to the developer about the physical hardware state. OPFF refuses to lie. It forces the developer to align their application logic with the actual physical reality of the machine.
+
+
+## 2. The "Implementation Friction" Heuristic
 
 OPFF enforces a strict boundary between the data layer and the application layer using a simple heuristic: **If a feature creates implementation friction for the parser, it does not belong in the data layer.**
 
