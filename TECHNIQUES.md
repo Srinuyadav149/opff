@@ -1,9 +1,11 @@
-# Workarounds & Application-Specific Techniques
+# Application-Specific Techniques (The Bare-Metal Reality)
 
 OPFF’s core is frozen and devoid of implicit logic. If your hardware architecture—such as FPGA alignment constraints or SIMD vectorization targets—demands specific memory layouts, you must enforce them at the application layer.
 
 > ### ⚠️ STRICT ARCHITECTURAL DISCLAIMER
-> The techniques outlined in this document are **non-standard workarounds**. They are neither advisable for general-purpose use nor are they verified, policed, or guaranteed by the OPFF core specification. The core parser blindly maps physical memory boundaries according to the header; it does not validate custom metadata, semantic bounds, or byte alignment logic. Absolute structural and logical integrity remains the exclusive responsibility of the application layer.
+> It is critical to understand that the techniques outlined below are **not novel "hacks" or format-specific workarounds**. Padding structs, aligning memory to cache boundaries, sub-channel packing, and bit-masking are the universal, everyday realities of high-performance systems programming (C, C++, Rust, CUDA). 
+> 
+> Traditional file formats attempt to hide these realities behind heavy serialization layers, automated bloat, and implicit transformations. OPFF simply removes the abstraction. We are not reinventing how memory works; we are just stripping away the illusions and forcing you to be explicit about it. The core parser blindly maps physical memory boundaries; absolute structural and logical integrity remains your exclusive responsibility.
 
 ## Accountability & Explicitness as a Feature
 
@@ -19,7 +21,7 @@ The format refuses to dictate your memory boundaries or guess your intent. Inste
 
 * **Format Neutrality:** The format acts as a completely passive observer. It does not "know" if it contains a bitmap, a tensor, or a LiDAR point cloud; it only maps the physical geometry.
 
-* **Enforced Competence:** The format acts as a strict compiler for memory dumping. It prevents lazy engineering by forcing the developer to understand and declare the exact physical footprint of their data before they write it to disk.
+* **Enforced Competence:** The format acts as a strict compiler for memory dumping. It prevents lazy engineering by forcing the developer to understand and declare the exact physical footprint (including dimensions, depth routing, and channel count) of their data before they write it to disk.
 
 ---
 
