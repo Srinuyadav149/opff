@@ -40,7 +40,7 @@ The header is exactly **64 bytes** to guarantee that the contiguous payload star
 | `0x00` | 4B | **Magic Number** | `b'OPFF'` (See Section 7 for Extensions) |
 | `0x04` | 1B | **Version** | `0x01` |
 | `0x05` | 1B | **Depth** | Specifies physical byte size and hardware routing. |
-| `0x06` | 1B | **Config** | Bit 7: Memory Layout. Bits 0-6: Channel Magnitude. |
+| `0x06` | 1B | **Config** | Bit 7: Memory Layout. Bits 0-6: Channel Count. |
 | `0x07` | 1B | **Frames** | Number of sequential frames (`1` to `255`). |
 | `0x08` | 4B | **Start ID** | Starting frame index or temporal coordinate (`u32`). |
 | `0x0C` | 2B | **Width** | Spatial X limit (`u16`). |
@@ -72,7 +72,7 @@ This byte physicalizes the execution pathway. It tells the hardware the scalar s
 
 This byte dictates the vector depth and how the channels are physically laid out in memory, directly impacting cache-hit rates during SIMD operations.
 
-* **Bits 0-6 (Channel Magnitude):** Number of values per coordinate (Valid: `1` to `127`).
+* **Bits 0-6 (Channel Count):** Number of values per coordinate (Valid: `1` to `127`).
 * **Bit 7 (Layout Flag):**
   * `0` = **Interleaved / Array of Structures (AoS):** Channels are stored sequentially per pixel (e.g., `RGB RGB RGB`).
   * `1` = **Planar / Structure of Arrays (SoA):** Channels are separated into contiguous memory blocks (e.g., `RRR GGG BBB`). Guarantees perfectly coalesced memory access for vector processing.
@@ -84,11 +84,11 @@ To mathematically prevent 32-bit heap buffer overflows during allocation, parser
 
 **Standard Calculation (`Depth != 0x00`):**
 ```text
-Expected_Size = 64 + (Frames * Width * Height * Channels * Depth_Bytes)
+Expected_Size = 64 + (Frames * Width * Height * Channel_Count * Depth_Bytes)
 ```
 **Bitmap Calculation (`Depth == 0x00`):**
 ```text
-Expected_Size = 64 + (Frames * Channels * ((Width * Height) / 8))
+Expected_Size = 64 + (Frames * Channel_Count * ((Width * Height) / 8))
 ```
 
 ---
@@ -97,7 +97,7 @@ Expected_Size = 64 + (Frames * Channels * ((Width * Height) / 8))
 A valid parser must instantly abort and reject the payload if it encounters any of these hardware contradictions:
 
 1. **The Interleaved Bitmap Contradiction:** Depth is `0x00` AND Layout is `0`. Hardware cannot efficiently interleave fractional byte boundaries across channels.
-2. **The Magnitude Out-of-Bounds Contradiction:** The extracted Channel Magnitude is `0` (void), or the raw byte attempts to declare a magnitude `> 127` without respecting the Layout bitmask. Hardware limits this to a strict `u7` logical bound.
+2. **The Channel_Count Out-of-Bounds Contradiction:** The extracted Channel Count is `0` (void), or the raw byte attempts to declare a magnitude `> 127` without respecting the Layout bitmask. Hardware limits this to a strict `u7` logical bound.
 3. **The Zero-Dimension Contradiction:** Width, Height, or Frames are `0`. Prevents undefined behavior during `mmap` calls.
 4. **The Bitmap Modulo Contradiction:** Depth is `0x00` but the spatial area (`Width * Height`) is not a clean multiple of 8. Prevents implicit scanline padding.
 5. **The Geometric Bounds Contradiction:** The physical file size on disk is strictly less than the `Expected_Size`.
