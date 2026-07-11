@@ -50,3 +50,11 @@ The format refuses to dictate your memory boundaries or guess your intent. Inste
 * **The Constraint:** You need to attach metadata (calibration matrices, timestamps, color spaces, semantic geometry bounds) or define experimental, application-specific data types (e.g., swapping a standard 8-bit float for Bfloat8) without breaking the zero-copy core parser.
 
 * **The Application Logic:** Append arbitrary bytes immediately after the contiguous data block. Use the namespace byte (`OPFX` or `OPF*`) to signal the presence of metadata. Because the core parser does not validate trailing bytes, your custom footer must utilize fixed-size structs or length-prefixed architectures with isolated magic bytes. This explicitly protects your application from blindly executing uninitialized disk sectors as metadata schemas, while enabling seamless type-swaps and metadata injection.
+
+## 5. Heterogeneous Data Structures (Sub-Channel Packing)
+
+* **The Constraint:** Your application requires storing mixed-size data fields at a single coordinate (e.g., a Vertex structure containing a 4-byte float `X`, a 2-byte integer `Y`, and a 1-byte integer `Z`), but OPFF strictly mandates a single uniform data type and scalar depth across all channels.
+
+* **The Application Logic:** Pack the mixed-size sub-channels into a single, uniformly sized byte footprint matching the nearest native hardware width. For example, the 4-byte, 2-byte, and 1-byte combination yields a 7-byte payload. By explicitly adding a 1-byte dummy padding sub-channel in your application code, you create a clean, uniform 8-byte structure. 
+
+* **The Mapping:** In the OPFF header, declare a single channel (`Channel Count = 1`) with a depth matching the packed size (`Depth = 0x08` for 8 bytes). The core parser remains blissfully ignorant of the internal structure; it simply treats the payload as a flat sequence of 8-byte units and hands the pointer to the application. The application layer then overlays its custom C-struct or executes bit-masks on the mapped pointer to extract the true `X`, `Y`, and `Z` sub-channels. As always, validating that the byte offsets inside this packed channel align properly with your CPU's memory layout is entirely the responsibility of the application layer.
