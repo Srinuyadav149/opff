@@ -97,7 +97,7 @@ Expected_Size = 64 + (Frames * Channel_Count * ((Width * Height) / 8))
 A valid parser must instantly abort and reject the payload if it encounters any of these hardware contradictions:
 
 1. **The Interleaved Bitmap Contradiction:** Depth is `0x00` AND Layout is `0`. Hardware cannot efficiently interleave fractional byte boundaries across channels.
-2. **The Channel_Count Out-of-Bounds Contradiction:** The extracted Channel Count is `0` (void), or the raw byte attempts to declare a magnitude `> 127` without respecting the Layout bitmask. Hardware limits this to a strict `u7` logical bound.
+2. **The Channel Count Out-of-Bounds Contradiction:** The extracted Channel Count is `0` (void), or the raw byte attempts to declare a magnitude `> 127` without respecting the Layout bitmask. Hardware limits this to a strict `u7` logical bound.
 3. **The Zero-Dimension Contradiction:** Width, Height, or Frames are `0`. Prevents undefined behavior during `mmap` calls.
 4. **The Bitmap Modulo Contradiction:** Depth is `0x00` but the spatial area (`Width * Height`) is not a clean multiple of 8. Prevents implicit scanline padding.
 5. **The Geometric Bounds Contradiction:** The physical file size on disk is strictly less than the `Expected_Size`.
